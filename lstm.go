@@ -57,7 +57,10 @@ func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
 		},
 	}
 
+	seqs = seqs[:1]
+
 	l.toggleTraining(true)
+	log.Println("Training LSTM on", len(seqs), "samples...")
 
 	var epoch int
 	neuralnet.SGDInteractive(gradienter, seqs, flags.StepSize, flags.BatchSize, func() bool {
@@ -112,7 +115,7 @@ func (l *LSTM) makeNetwork(flags *lstmFlags) {
 			layer := rnn.NewLSTM(inputSize, flags.HiddenSize)
 			l.Block = append(l.Block, layer)
 		}
-		outputBlock := rnn.NewNetworkBlock(neuralnet.Network{
+		outputNet := neuralnet.Network{
 			0: neuralnet.Sigmoid{},
 			1: &neuralnet.DropoutLayer{
 				KeepProbability: flags.HiddenDropout,
@@ -123,7 +126,9 @@ func (l *LSTM) makeNetwork(flags *lstmFlags) {
 				OutputCount: ASCIICount,
 			},
 			3: &neuralnet.LogSoftmaxLayer{},
-		}, 0)
+		}
+		outputNet.Randomize()
+		outputBlock := rnn.NewNetworkBlock(outputNet, 0)
 		l.Block = append(l.Block, outputBlock)
 	}
 }
