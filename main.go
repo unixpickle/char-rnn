@@ -117,12 +117,13 @@ func helpCommand() {
 
 func dieUsage() {
 	fmt.Fprintln(os.Stderr, "Usage: char-rnn train <model> <rnn-file> <sample dir> [args]\n"+
-		"                gen <rnn-file> <chars> [args]\n"+
-		"                help <model>\n\n"+
+		"       char-rnn gen <rnn-file> <chars> [args]\n"+
+		"       char-rnn help <model>\n\n"+
 		"Available models:")
 	for _, m := range Models {
 		fmt.Fprintln(os.Stderr, " "+m.Name())
 	}
+	fmt.Fprintln(os.Stderr)
 	os.Exit(1)
 }
 
