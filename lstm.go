@@ -15,8 +15,6 @@ import (
 	"github.com/unixpickle/weakai/rnn"
 )
 
-const asciiCount = 128
-
 const (
 	defaultLSTMHiddenSize    = 512
 	defaultLSTMLayerCount    = 2
@@ -44,7 +42,7 @@ func (l *LSTM) PrintTrainingUsage() {
 	newLSTMFlags().FlagSet.PrintDefaults()
 }
 
-func (l *LSTM) PrintGenerationUsage() {
+func (l *LSTM) PrintGenerateUsage() {
 	fmt.Fprintln(os.Stderr, "No generation arguments.")
 }
 
@@ -72,11 +70,12 @@ func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
 func (l *LSTM) Generate(length int, args []string) string {
 	var res bytes.Buffer
 	r := &rnn.Runner{Block: l.Block}
-	input := make(linalg.Vector, asciiCount)
+	input := make(linalg.Vector, ASCIICount)
+	input[0] = 1
 	for i := 0; i < length; i++ {
 		output := r.StepTime(input)
 		idx := chooseLogIndex(output)
-		input := make(linalg.Vector, asciiCount)
+		input := make(linalg.Vector, ASCIICount)
 		input[idx] = 1
 		res.WriteByte(byte(idx))
 	}
@@ -91,18 +90,22 @@ func (l *LSTM) SerializerType() string {
 	return serializerTypeLSTM
 }
 
+func (l *LSTM) Name() string {
+	return "lstm"
+}
+
 func (l *LSTM) makeNetwork(flags *lstmFlags) {
 	if l.Block == nil {
 		l.Block = rnn.StackedBlock{
-			rnn.NewNetworkBlock(neuralnet.Network{
-				&neuralnet.DropoutLayer{
+			0: rnn.NewNetworkBlock(neuralnet.Network{
+				0: &neuralnet.DropoutLayer{
 					KeepProbability: flags.InDropout,
 					Training:        true,
 				},
 			}, 0),
 		}
 		for i := 0; i < flags.Layers; i++ {
-			inputSize := asciiCount
+			inputSize := ASCIICount
 			if i > 0 {
 				inputSize = flags.HiddenSize
 			}
@@ -110,16 +113,16 @@ func (l *LSTM) makeNetwork(flags *lstmFlags) {
 			l.Block = append(l.Block, layer)
 		}
 		outputBlock := rnn.NewNetworkBlock(neuralnet.Network{
-			neuralnet.Sigmoid{},
-			&neuralnet.DropoutLayer{
+			0: neuralnet.Sigmoid{},
+			1: &neuralnet.DropoutLayer{
 				KeepProbability: flags.HiddenDropout,
 				Training:        true,
 			},
-			&neuralnet.DenseLayer{
+			2: &neuralnet.DenseLayer{
 				InputCount:  flags.HiddenSize,
-				OutputCount: asciiCount,
+				OutputCount: ASCIICount,
 			},
-			&neuralnet.LogSoftmaxLayer{},
+			3: &neuralnet.LogSoftmaxLayer{},
 		}, 0)
 		l.Block = append(l.Block, outputBlock)
 	}

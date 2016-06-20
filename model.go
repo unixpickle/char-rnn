@@ -18,4 +18,6 @@ type Model interface {
 	// Generate generates a new string of text using the
 	// model.
 	Generate(length int, arguments []string) string
+
+	Name() string
 }
