@@ -19,7 +19,6 @@ const (
 	defaultLSTMHiddenSize    = 512
 	defaultLSTMLayerCount    = 2
 	defaultLSTMStepSize      = 0.001
-	defaultLSTMInDropout     = 0.9
 	defaultLSTMHiddenDropout = 0.5
 	defaultLSTMBatchSize     = 100
 
@@ -57,17 +56,26 @@ func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
 			CostFunc: costFunc,
 		},
 	}
+
+	l.toggleTraining(true)
+
 	var epoch int
 	neuralnet.SGDInteractive(gradienter, seqs, flags.StepSize, flags.BatchSize, func() bool {
+		l.toggleTraining(false)
+		defer l.toggleTraining(true)
+
 		runner := &rnn.Runner{Block: l.Block}
 		cost := runner.TotalCost(validateBatchSize, seqs, costFunc)
 		log.Printf("Epoch %d: cost=%f", epoch, cost)
+
 		epoch++
 		return true
 	})
 }
 
 func (l *LSTM) Generate(length int, args []string) string {
+	l.toggleTraining(false)
+
 	var res bytes.Buffer
 	r := &rnn.Runner{Block: l.Block}
 	input := make(linalg.Vector, ASCIICount)
@@ -96,14 +104,6 @@ func (l *LSTM) Name() string {
 
 func (l *LSTM) makeNetwork(flags *lstmFlags) {
 	if l.Block == nil {
-		l.Block = rnn.StackedBlock{
-			0: rnn.NewNetworkBlock(neuralnet.Network{
-				0: &neuralnet.DropoutLayer{
-					KeepProbability: flags.InDropout,
-					Training:        true,
-				},
-			}, 0),
-		}
 		for i := 0; i < flags.Layers; i++ {
 			inputSize := ASCIICount
 			if i > 0 {
@@ -128,6 +128,12 @@ func (l *LSTM) makeNetwork(flags *lstmFlags) {
 	}
 }
 
+func (l *LSTM) toggleTraining(training bool) {
+	outBlock := l.Block[len(l.Block)-1].(*rnn.NetworkBlock)
+	dropout := outBlock.Network()[1].(*neuralnet.DropoutLayer)
+	dropout.Training = training
+}
+
 type lstmFlags struct {
 	FlagSet *flag.FlagSet
 
@@ -136,7 +142,6 @@ type lstmFlags struct {
 
 	HiddenSize    int
 	Layers        int
-	InDropout     float64
 	HiddenDropout float64
 }
 
@@ -147,9 +152,8 @@ func newLSTMFlags() *lstmFlags {
 	res.FlagSet.IntVar(&res.BatchSize, "batch", defaultLSTMBatchSize, "mini-batch size")
 	res.FlagSet.IntVar(&res.HiddenSize, "hidden", defaultLSTMHiddenSize, "hidden layer size")
 	res.FlagSet.IntVar(&res.Layers, "layers", defaultLSTMLayerCount, "number of layers")
-	res.FlagSet.Float64Var(&res.InDropout, "dropin", defaultLSTMInDropout, "input dropout")
-	res.FlagSet.Float64Var(&res.HiddenDropout, "drophid", defaultLSTMHiddenDropout,
-		"hidden dropout")
+	res.FlagSet.Float64Var(&res.HiddenDropout, "dropout", defaultLSTMHiddenDropout,
+		"hidden dropout (1=no dropout)")
 	return res
 }
 
