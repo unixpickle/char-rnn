@@ -30,7 +30,7 @@ type LSTM struct {
 }
 
 func DeserializeLSTM(d []byte) (serializer.Serializer, error) {
-	block, err := rnn.DeserializeLSTM(d)
+	block, err := rnn.DeserializeStackedBlock(d)
 	if err != nil {
 		return nil, err
 	}

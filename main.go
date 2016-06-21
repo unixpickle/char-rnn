@@ -36,11 +36,11 @@ func trainCommand() {
 		dieUsage()
 	}
 
-	modelFile := os.Args[2]
+	modelFile := os.Args[3]
 
-	model := modelForName(modelFile)
+	model := modelForName(os.Args[2])
 	samples := ReadSampleSet(os.Args[4])
-	modelData, err := ioutil.ReadFile(os.Args[3])
+	modelData, err := ioutil.ReadFile(modelFile)
 
 	if err == nil {
 		x, err := serializer.DeserializeWithType(modelData)
@@ -61,7 +61,7 @@ func trainCommand() {
 
 	model.Train(samples, os.Args[5:])
 
-	encoded, err := model.Serialize()
+	encoded, err := serializer.SerializeWithType(model)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to serialize model:", err)
 		os.Exit(1)
