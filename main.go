@@ -39,7 +39,7 @@ func trainCommand() {
 	modelFile := os.Args[2]
 
 	model := modelForName(modelFile)
-	samples := ReadSequences(os.Args[4])
+	samples := ReadSampleSet(os.Args[4])
 	modelData, err := ioutil.ReadFile(os.Args[3])
 
 	if err == nil {

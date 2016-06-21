@@ -17,14 +17,16 @@ const (
 	ASCIICount    = 128
 )
 
-func ReadSequences(dir string) neuralnet.SampleSet {
+type SampleSet [][]byte
+
+func ReadSampleSet(dir string) SampleSet {
 	contents, err := ioutil.ReadDir(dir)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	var result neuralnet.SampleSet
+	var result SampleSet
 
 	for _, item := range contents {
 		if strings.HasPrefix(item.Name(), ".") {
@@ -41,12 +43,33 @@ func ReadSequences(dir string) neuralnet.SampleSet {
 			if bs > len(textContents)-i {
 				bs = len(textContents) - i
 			}
-			seq := seqForChunk(textContents[i : i+bs])
-			result = append(result, seq)
+			result = append(result, textContents[i:i+bs])
 		}
 	}
 
 	return result
+}
+
+func (s SampleSet) Len() int {
+	return len(s)
+}
+
+func (s SampleSet) Copy() neuralnet.SampleSet {
+	res := make(SampleSet, len(s))
+	copy(res, s)
+	return res
+}
+
+func (s SampleSet) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s SampleSet) GetSample(idx int) interface{} {
+	return seqForChunk(s[idx])
+}
+
+func (s SampleSet) Subset(start, end int) neuralnet.SampleSet {
+	return s[start:end]
 }
 
 func seqForChunk(chunk []byte) rnn.Sequence {

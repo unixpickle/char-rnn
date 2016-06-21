@@ -57,10 +57,8 @@ func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
 		},
 	}
 
-	seqs = seqs[:1]
-
 	l.toggleTraining(true)
-	log.Println("Training LSTM on", len(seqs), "samples...")
+	log.Println("Training LSTM on", seqs.Len(), "samples...")
 
 	var epoch int
 	neuralnet.SGDInteractive(gradienter, seqs, flags.StepSize, flags.BatchSize, func() bool {
