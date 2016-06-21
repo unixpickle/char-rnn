@@ -114,16 +114,15 @@ func (l *LSTM) makeNetwork(flags *lstmFlags) {
 			l.Block = append(l.Block, layer)
 		}
 		outputNet := neuralnet.Network{
-			0: neuralnet.Sigmoid{},
-			1: &neuralnet.DropoutLayer{
+			&neuralnet.DropoutLayer{
 				KeepProbability: flags.HiddenDropout,
 				Training:        true,
 			},
-			2: &neuralnet.DenseLayer{
+			&neuralnet.DenseLayer{
 				InputCount:  flags.HiddenSize,
 				OutputCount: ASCIICount,
 			},
-			3: &neuralnet.LogSoftmaxLayer{},
+			&neuralnet.LogSoftmaxLayer{},
 		}
 		outputNet.Randomize()
 		outputBlock := rnn.NewNetworkBlock(outputNet, 0)
@@ -133,7 +132,7 @@ func (l *LSTM) makeNetwork(flags *lstmFlags) {
 
 func (l *LSTM) toggleTraining(training bool) {
 	outBlock := l.Block[len(l.Block)-1].(*rnn.NetworkBlock)
-	dropout := outBlock.Network()[1].(*neuralnet.DropoutLayer)
+	dropout := outBlock.Network()[0].(*neuralnet.DropoutLayer)
 	dropout.Training = training
 }
 
