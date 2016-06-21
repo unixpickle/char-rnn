@@ -22,7 +22,10 @@ const (
 	defaultLSTMHiddenDropout = 0.5
 	defaultLSTMBatchSize     = 100
 
+	randomCoefficient = 0.05
+
 	validateBatchSize = 20
+	maxLanes          = 25
 )
 
 type LSTM struct {
@@ -52,8 +55,10 @@ func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
 	costFunc := neuralnet.DotCost{}
 	gradienter := &neuralnet.RMSProp{
 		Gradienter: &rnn.FullRGradienter{
-			Learner:  l.Block,
-			CostFunc: costFunc,
+			Learner:       l.Block,
+			CostFunc:      costFunc,
+			MaxGoroutines: 1,
+			MaxLanes:      maxLanes,
 		},
 	}
 
@@ -112,6 +117,14 @@ func (l *LSTM) makeNetwork(flags *lstmFlags) {
 			}
 			layer := rnn.NewLSTM(inputSize, flags.HiddenSize)
 			l.Block = append(l.Block, layer)
+
+			for i, param := range layer.Parameters() {
+				if i%2 == 0 {
+					for i := range param.Vector {
+						param.Vector[i] = rand.NormFloat64() * randomCoefficient
+					}
+				}
+			}
 		}
 		outputNet := neuralnet.Network{
 			&neuralnet.DropoutLayer{
