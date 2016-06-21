@@ -84,7 +84,7 @@ func (l *LSTM) Generate(length int, args []string) string {
 	for i := 0; i < length; i++ {
 		output := r.StepTime(input)
 		idx := chooseLogIndex(output)
-		input := make(linalg.Vector, ASCIICount)
+		input = make(linalg.Vector, ASCIICount)
 		input[idx] = 1
 		res.WriteByte(byte(idx))
 	}
