@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/davecheney/profile"
 	"github.com/unixpickle/serializer"
 )
 
@@ -17,6 +18,8 @@ var Models = []Model{&LSTM{}}
 const OutputPermissions = 0755
 
 func main() {
+	defer profile.Start(profile.CPUProfile).Stop()
+
 	rand.Seed(time.Now().UnixNano())
 	if len(os.Args) < 2 {
 		dieUsage()

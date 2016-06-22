@@ -16,16 +16,16 @@ import (
 )
 
 const (
-	defaultLSTMHiddenSize    = 512
-	defaultLSTMLayerCount    = 2
-	defaultLSTMStepSize      = 0.001
+	defaultLSTMHiddenSize    = 300
+	defaultLSTMLayerCount    = 1
+	defaultLSTMStepSize      = 0.005
 	defaultLSTMHiddenDropout = 0.5
 	defaultLSTMBatchSize     = 100
 
 	randomCoefficient = 0.05
 
 	validateBatchSize = 20
-	maxLanes          = 25
+	maxLanes          = 21
 )
 
 type LSTM struct {
@@ -57,8 +57,8 @@ func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
 		Gradienter: &rnn.FullRGradienter{
 			Learner:       l.Block,
 			CostFunc:      costFunc,
-			MaxGoroutines: 1,
 			MaxLanes:      maxLanes,
+			MaxGoroutines: 1,
 		},
 		Damping: 0.01,
 	}
