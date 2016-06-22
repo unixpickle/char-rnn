@@ -57,7 +57,6 @@ func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
 		Gradienter: &rnn.FullRGradienter{
 			Learner:       l.Block,
 			CostFunc:      costFunc,
-			MaxGoroutines: 1,
 			MaxLanes:      maxLanes,
 		},
 		Damping: 0.01,
