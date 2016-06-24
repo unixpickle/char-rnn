@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	TextChunkSize = 50
+	TextChunkSize = 1 << 10
 	ASCIICount    = 128
 )
 

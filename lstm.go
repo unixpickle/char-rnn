@@ -21,6 +21,10 @@ const (
 	defaultLSTMStepSize      = 0.005
 	defaultLSTMHiddenDropout = 0.5
 	defaultLSTMBatchSize     = 100
+	defaultLSTMHeadSize      = 50
+	defaultLSTMTailSize      = 20
+
+	defaultLSTMEquilibrationMemory = 0.9
 
 	randomCoefficient = 0.05
 
@@ -53,13 +57,16 @@ func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
 	flags.FlagSet.Parse(args)
 	l.makeNetwork(flags)
 	costFunc := neuralnet.DotCost{}
-	gradienter := &neuralnet.AdaGrad{
-		Gradienter: &rnn.FullRGradienter{
-			Learner:       l.Block,
-			CostFunc:      costFunc,
-			MaxLanes:      maxLanes,
-			MaxGoroutines: 1,
+	gradienter := &neuralnet.Equilibration{
+		RGradienter: &rnn.TruncRGradienter{
+			Learner:  l.Block,
+			CostFunc: costFunc,
+			MaxLanes: maxLanes,
+			HeadSize: flags.HeadSize,
+			TailSize: flags.TailSize,
 		},
+		Learner: l.Block,
+		Memory:  flags.EquilibrationMemory,
 		Damping: 0.01,
 	}
 
@@ -172,6 +179,11 @@ type lstmFlags struct {
 	HiddenSize    int
 	Layers        int
 	HiddenDropout float64
+
+	HeadSize int
+	TailSize int
+
+	EquilibrationMemory float64
 }
 
 func newLSTMFlags() *lstmFlags {
@@ -183,6 +195,10 @@ func newLSTMFlags() *lstmFlags {
 	res.FlagSet.IntVar(&res.Layers, "layers", defaultLSTMLayerCount, "number of layers")
 	res.FlagSet.Float64Var(&res.HiddenDropout, "dropout", defaultLSTMHiddenDropout,
 		"hidden dropout (1=no dropout)")
+	res.FlagSet.IntVar(&res.HeadSize, "headsize", defaultLSTMHeadSize, "TBPTT head size")
+	res.FlagSet.IntVar(&res.TailSize, "tailsize", defaultLSTMTailSize, "TBPTT tail size")
+	res.FlagSet.Float64Var(&res.EquilibrationMemory, "eqmem", defaultLSTMEquilibrationMemory,
+		"equilibration memory")
 	return res
 }
 
