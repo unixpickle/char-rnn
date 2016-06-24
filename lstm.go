@@ -8,6 +8,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"strconv"
 
 	"github.com/unixpickle/num-analysis/linalg"
 	"github.com/unixpickle/serializer"
@@ -49,7 +50,7 @@ func (l *LSTM) PrintTrainingUsage() {
 }
 
 func (l *LSTM) PrintGenerateUsage() {
-	fmt.Fprintln(os.Stderr, "No generation arguments.")
+	fmt.Fprintln(os.Stderr, "Optional value: [temperature]")
 }
 
 func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
@@ -88,6 +89,16 @@ func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
 }
 
 func (l *LSTM) Generate(length int, args []string) string {
+	temp := 1.0
+	if len(args) == 1 {
+		var err error
+		temp, err = strconv.ParseFloat(args[0], 64)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Invalid temperature:", args[0])
+			os.Exit(1)
+		}
+	}
+
 	l.toggleTraining(false)
 
 	var res bytes.Buffer
@@ -96,7 +107,7 @@ func (l *LSTM) Generate(length int, args []string) string {
 	input[0] = 1
 	for i := 0; i < length; i++ {
 		output := r.StepTime(input)
-		idx := chooseLogIndex(output)
+		idx := chooseLogIndex(output, temp)
 		input = make(linalg.Vector, ASCIICount)
 		input[idx] = 1
 		res.WriteByte(byte(idx))
@@ -202,12 +213,16 @@ func newLSTMFlags() *lstmFlags {
 	return res
 }
 
-func chooseLogIndex(logProbs linalg.Vector) int {
+func chooseLogIndex(logProbs linalg.Vector, temp float64) int {
 	n := rand.Float64()
 	var sum float64
+	for _, x := range logProbs {
+		sum += math.Exp(x / temp)
+	}
+	var curSum float64
 	for i, x := range logProbs {
-		sum += math.Exp(x)
-		if sum > n {
+		curSum += math.Exp(x / temp)
+		if curSum/sum > n {
 			return i
 		}
 	}
