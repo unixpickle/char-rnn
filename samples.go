@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/unixpickle/num-analysis/linalg"
-	"github.com/unixpickle/weakai/neuralnet"
+	"github.com/unixpickle/sgd"
 	"github.com/unixpickle/weakai/rnn"
 )
 
@@ -54,7 +54,7 @@ func (s SampleSet) Len() int {
 	return len(s)
 }
 
-func (s SampleSet) Copy() neuralnet.SampleSet {
+func (s SampleSet) Copy() sgd.SampleSet {
 	res := make(SampleSet, len(s))
 	copy(res, s)
 	return res
@@ -68,7 +68,7 @@ func (s SampleSet) GetSample(idx int) interface{} {
 	return seqForChunk(s[idx])
 }
 
-func (s SampleSet) Subset(start, end int) neuralnet.SampleSet {
+func (s SampleSet) Subset(start, end int) sgd.SampleSet {
 	return s[start:end]
 }
 

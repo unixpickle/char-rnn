@@ -12,6 +12,7 @@ import (
 
 	"github.com/unixpickle/num-analysis/linalg"
 	"github.com/unixpickle/serializer"
+	"github.com/unixpickle/sgd"
 	"github.com/unixpickle/weakai/neuralnet"
 	"github.com/unixpickle/weakai/rnn"
 )
@@ -53,12 +54,12 @@ func (l *LSTM) PrintGenerateUsage() {
 	fmt.Fprintln(os.Stderr, "Optional value: [temperature]")
 }
 
-func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
+func (l *LSTM) Train(seqs sgd.SampleSet, args []string) {
 	flags := newLSTMFlags()
 	flags.FlagSet.Parse(args)
 	l.makeNetwork(flags)
 	costFunc := neuralnet.DotCost{}
-	gradienter := &neuralnet.Equilibration{
+	gradienter := &sgd.Equilibration{
 		RGradienter: &rnn.TruncatedBPTT{
 			Learner:  l.Block,
 			CostFunc: costFunc,
@@ -75,7 +76,7 @@ func (l *LSTM) Train(seqs neuralnet.SampleSet, args []string) {
 	log.Println("Training LSTM on", seqs.Len(), "samples...")
 
 	var epoch int
-	neuralnet.SGDInteractive(gradienter, seqs, flags.StepSize, flags.BatchSize, func() bool {
+	sgd.SGDInteractive(gradienter, seqs, flags.StepSize, flags.BatchSize, func() bool {
 		l.toggleTraining(false)
 		defer l.toggleTraining(true)
 
