@@ -59,17 +59,14 @@ func (l *LSTM) Train(seqs sgd.SampleSet, args []string) {
 	flags.FlagSet.Parse(args)
 	l.makeNetwork(flags)
 	costFunc := neuralnet.DotCost{}
-	gradienter := &sgd.Equilibration{
-		RGradienter: &rnn.TruncatedBPTT{
+	gradienter := &sgd.Adam{
+		Gradienter: &rnn.TruncatedBPTT{
 			Learner:  l.Block,
 			CostFunc: costFunc,
 			MaxLanes: maxLanes,
 			HeadSize: flags.HeadSize,
 			TailSize: flags.TailSize,
 		},
-		Learner: l.Block,
-		Memory:  flags.EquilibrationMemory,
-		Damping: 0.01,
 	}
 
 	l.toggleTraining(true)
