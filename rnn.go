@@ -77,12 +77,12 @@ func GenerateRNN(b rnn.Block, t trainToggler, length int, args []string) string 
 
 	var res bytes.Buffer
 	runner := &rnn.Runner{Block: b}
-	input := make(linalg.Vector, ASCIICount)
+	input := make(linalg.Vector, CharCount)
 	input[0] = 1
 	for i := 0; i < length; i++ {
 		output := runner.StepTime(input)
 		idx := chooseLogIndex(output, temp)
-		input = make(linalg.Vector, ASCIICount)
+		input = make(linalg.Vector, CharCount)
 		input[idx] = 1
 		res.WriteByte(byte(idx))
 	}

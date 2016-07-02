@@ -14,7 +14,7 @@ import (
 
 const (
 	TextChunkSize = 1 << 10
-	ASCIICount    = 128
+	CharCount     = 256
 )
 
 type SampleSet [][]byte
@@ -86,7 +86,7 @@ func seqForChunk(chunk []byte) rnn.Sequence {
 }
 
 func oneHotAscii(b byte) linalg.Vector {
-	res := make(linalg.Vector, ASCIICount)
+	res := make(linalg.Vector, CharCount)
 	res[int(b)] = 1
 	return res
 }

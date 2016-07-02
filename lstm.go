@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 
@@ -62,12 +63,14 @@ func (l *LSTM) makeNetwork(flags *rnnFlags) {
 	if l.Block != nil {
 		return
 	}
+	mean := 1.0 / CharCount
+	stddev := math.Sqrt((CharCount-1)*math.Pow(mean, 2) + math.Pow(1-mean, 2))
 	inNet := neuralnet.Network{
-		&neuralnet.RescaleLayer{Bias: -0.0078125, Scale: 1 / 0.08804240367},
+		&neuralnet.RescaleLayer{Bias: -mean, Scale: 1 / stddev},
 	}
 	l.Block = append(l.Block, rnn.NewNetworkBlock(inNet, 0))
 	for i := 0; i < flags.Layers; i++ {
-		inputSize := ASCIICount
+		inputSize := CharCount
 		if i > 0 {
 			inputSize = flags.HiddenSize
 		}
@@ -89,7 +92,7 @@ func (l *LSTM) makeNetwork(flags *rnnFlags) {
 		},
 		&neuralnet.DenseLayer{
 			InputCount:  flags.HiddenSize,
-			OutputCount: ASCIICount,
+			OutputCount: CharCount,
 		},
 		&neuralnet.LogSoftmaxLayer{},
 	}
