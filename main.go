@@ -46,8 +46,8 @@ func trainCommand() {
 	modelData, err := ioutil.ReadFile(modelFile)
 
 	if err == nil {
-		x, err := serializer.DeserializeWithType(modelData)
-		if err != nil {
+		x, desErr := serializer.DeserializeWithType(modelData)
+		if desErr != nil {
 			fmt.Fprintln(os.Stderr, "Failed to deserialize model:", err)
 			os.Exit(1)
 		}

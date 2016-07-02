@@ -1,16 +1,10 @@
 package main
 
 import (
-	"bytes"
-	"flag"
 	"fmt"
-	"log"
-	"math"
 	"math/rand"
 	"os"
-	"strconv"
 
-	"github.com/unixpickle/num-analysis/linalg"
 	"github.com/unixpickle/serializer"
 	"github.com/unixpickle/sgd"
 	"github.com/unixpickle/weakai/neuralnet"
@@ -18,18 +12,7 @@ import (
 )
 
 const (
-	defaultLSTMHiddenSize    = 300
-	defaultLSTMLayerCount    = 1
-	defaultLSTMStepSize      = 0.005
-	defaultLSTMHiddenDropout = 0.5
-	defaultLSTMBatchSize     = 100
-	defaultLSTMHeadSize      = 50
-	defaultLSTMTailSize      = 20
-
-	randomCoefficient = 0.05
-
-	validateBatchSize = 20
-	maxLanes          = 21
+	randomLSTMCoefficient = 0.05
 )
 
 type LSTM struct {
@@ -45,7 +28,7 @@ func DeserializeLSTM(d []byte) (serializer.Serializer, error) {
 }
 
 func (l *LSTM) PrintTrainingUsage() {
-	newLSTMFlags().FlagSet.PrintDefaults()
+	newRNNFlags(l.Name()).FlagSet.PrintDefaults()
 }
 
 func (l *LSTM) PrintGenerateUsage() {
@@ -53,62 +36,14 @@ func (l *LSTM) PrintGenerateUsage() {
 }
 
 func (l *LSTM) Train(seqs sgd.SampleSet, args []string) {
-	flags := newLSTMFlags()
+	flags := newRNNFlags(l.Name())
 	flags.FlagSet.Parse(args)
 	l.makeNetwork(flags)
-	costFunc := neuralnet.DotCost{}
-	gradienter := &sgd.Adam{
-		Gradienter: &rnn.TruncatedBPTT{
-			Learner:  l.Block,
-			CostFunc: costFunc,
-			MaxLanes: maxLanes,
-			HeadSize: flags.HeadSize,
-			TailSize: flags.TailSize,
-		},
-	}
-
-	l.toggleTraining(true)
-	log.Println("Training LSTM on", seqs.Len(), "samples...")
-
-	var epoch int
-	sgd.SGDInteractive(gradienter, seqs, flags.StepSize, flags.BatchSize, func() bool {
-		l.toggleTraining(false)
-		defer l.toggleTraining(true)
-
-		runner := &rnn.Runner{Block: l.Block}
-		cost := runner.TotalCost(validateBatchSize, seqs, costFunc)
-		log.Printf("Epoch %d: cost=%f", epoch, cost)
-
-		epoch++
-		return true
-	})
+	TrainRNN(l.Block, l, seqs, flags)
 }
 
 func (l *LSTM) Generate(length int, args []string) string {
-	temp := 1.0
-	if len(args) == 1 {
-		var err error
-		temp, err = strconv.ParseFloat(args[0], 64)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Invalid temperature:", args[0])
-			os.Exit(1)
-		}
-	}
-
-	l.toggleTraining(false)
-
-	var res bytes.Buffer
-	r := &rnn.Runner{Block: l.Block}
-	input := make(linalg.Vector, ASCIICount)
-	input[0] = 1
-	for i := 0; i < length; i++ {
-		output := r.StepTime(input)
-		idx := chooseLogIndex(output, temp)
-		input = make(linalg.Vector, ASCIICount)
-		input[idx] = 1
-		res.WriteByte(byte(idx))
-	}
-	return res.String()
+	return GenerateRNN(l.Block, l, length, args)
 }
 
 func (l *LSTM) Serialize() ([]byte, error) {
@@ -123,7 +58,7 @@ func (l *LSTM) Name() string {
 	return "lstm"
 }
 
-func (l *LSTM) makeNetwork(flags *lstmFlags) {
+func (l *LSTM) makeNetwork(flags *rnnFlags) {
 	if l.Block != nil {
 		return
 	}
@@ -175,48 +110,4 @@ func (l *LSTM) toggleTraining(training bool) {
 	outBlock := l.Block[len(l.Block)-1].(*rnn.NetworkBlock)
 	dropout := outBlock.Network()[0].(*neuralnet.DropoutLayer)
 	dropout.Training = training
-}
-
-type lstmFlags struct {
-	FlagSet *flag.FlagSet
-
-	StepSize  float64
-	BatchSize int
-
-	HiddenSize    int
-	Layers        int
-	HiddenDropout float64
-
-	HeadSize int
-	TailSize int
-}
-
-func newLSTMFlags() *lstmFlags {
-	res := &lstmFlags{}
-	res.FlagSet = flag.NewFlagSet("lstm", flag.ExitOnError)
-	res.FlagSet.Float64Var(&res.StepSize, "stepsize", defaultLSTMStepSize, "step size")
-	res.FlagSet.IntVar(&res.BatchSize, "batch", defaultLSTMBatchSize, "mini-batch size")
-	res.FlagSet.IntVar(&res.HiddenSize, "hidden", defaultLSTMHiddenSize, "hidden layer size")
-	res.FlagSet.IntVar(&res.Layers, "layers", defaultLSTMLayerCount, "number of layers")
-	res.FlagSet.Float64Var(&res.HiddenDropout, "dropout", defaultLSTMHiddenDropout,
-		"hidden dropout (1=no dropout)")
-	res.FlagSet.IntVar(&res.HeadSize, "headsize", defaultLSTMHeadSize, "TBPTT head size")
-	res.FlagSet.IntVar(&res.TailSize, "tailsize", defaultLSTMTailSize, "TBPTT tail size")
-	return res
-}
-
-func chooseLogIndex(logProbs linalg.Vector, temp float64) int {
-	n := rand.Float64()
-	var sum float64
-	for _, x := range logProbs {
-		sum += math.Exp(x / temp)
-	}
-	var curSum float64
-	for i, x := range logProbs {
-		curSum += math.Exp(x / temp)
-		if curSum/sum > n {
-			return i
-		}
-	}
-	return len(logProbs) - 1
 }
