@@ -26,8 +26,6 @@ const (
 	defaultLSTMHeadSize      = 50
 	defaultLSTMTailSize      = 20
 
-	defaultLSTMEquilibrationMemory = 0.9
-
 	randomCoefficient = 0.05
 
 	validateBatchSize = 20
@@ -191,8 +189,6 @@ type lstmFlags struct {
 
 	HeadSize int
 	TailSize int
-
-	EquilibrationMemory float64
 }
 
 func newLSTMFlags() *lstmFlags {
@@ -206,8 +202,6 @@ func newLSTMFlags() *lstmFlags {
 		"hidden dropout (1=no dropout)")
 	res.FlagSet.IntVar(&res.HeadSize, "headsize", defaultLSTMHeadSize, "TBPTT head size")
 	res.FlagSet.IntVar(&res.TailSize, "tailsize", defaultLSTMTailSize, "TBPTT tail size")
-	res.FlagSet.Float64Var(&res.EquilibrationMemory, "eqmem", defaultLSTMEquilibrationMemory,
-		"equilibration memory")
 	return res
 }
 
