@@ -25,8 +25,6 @@ const (
 	defaultRNNHeadSize      = 50
 	defaultRNNTailSize      = 20
 
-	randomCoefficient = 0.05
-
 	validateBatchSize = 20
 	maxLanes          = 21
 )

@@ -12,7 +12,7 @@ import (
 	"github.com/unixpickle/serializer"
 )
 
-var Models = []Model{&LSTM{}}
+var Models = []Model{&LSTM{}, &GRU{}}
 
 const OutputPermissions = 0755
 
@@ -48,7 +48,7 @@ func trainCommand() {
 	if err == nil {
 		x, desErr := serializer.DeserializeWithType(modelData)
 		if desErr != nil {
-			fmt.Fprintln(os.Stderr, "Failed to deserialize model:", err)
+			fmt.Fprintln(os.Stderr, "Failed to deserialize model:", desErr)
 			os.Exit(1)
 		}
 		var ok bool
