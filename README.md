@@ -1,6 +1,6 @@
 # char-rnn
 
-This is an attempt to recreate [karpathy/char-rnn](https://github.com/karpathy/char-rnn) with my own RNN package. Wish me luck.
+I have recreated [karpathy/char-rnn](https://github.com/karpathy/char-rnn) with my own RNN package. It works fairly well, and I have used it to generate [some cool results](#example).
 
 # Usage
 
@@ -10,15 +10,18 @@ Now, install [Go](https://golang.org/doc/install) and setup a GOPATH. Once this 
 
 ```
 $ go get -u github.com/unixpickle/char-rnn
+$ cd $GOPATH/src/github.com/unixpickle/char-rnn
+$ go build
 ```
+
+This will generate an executable called `char-rnn` in your current directory. If you have the Go BLAS package setup to use a C implementation of BLAS, you can access that by building with `go build -tags cblas`.
 
 ## Training
 
 You can train char-rnn on some data as follows:
 
 ```
-$ cd $GOPATH/src/github.com/unixpickle/char-rnn
-$ go run *.go train lstm /path/to/lstm /path/to/text
+$ ./char-rnn train lstm /path/to/lstm /path/to/text
 2016/06/22 17:52:53 Loaded model from file.
 2016/06/22 17:52:53 Training LSTM on 22308 samples...
 2016/06/22 17:59:29 Epoch 0: cost=1857807.936353
@@ -38,5 +41,30 @@ To pause or stop training, press Ctrl+C exactly once. This will finish the curre
 Once you have trained an LSTM, you can use it to generate a block of text. You must decide how much text to generate (e.g. 1000 characters, like below):
 
 ```
-$ go run *.go gen /path/to/lstm 1000
+$ ./char-rnn gen /path/to/lstm 1000
+```
+
+# Example
+
+I ran a GRU on the output of `ls -l /usr/bin` and then generated some dir listings:
+
+```
+-rwxr-xr-x  35 root   wheel       821 Aug 23  2015 iptab5.18
+-r-xr-xr-x   1 root   wheel      3659 Sep 28  2015 instmodse
+-rwxr-xr-x   1 root   wheel        75 Oct 25  2015 info3eal -> /System/Library/Frameworks/JavaVM.framework/Versions/Current/Commands/rmic
+lrwxr-xr-x   1 root   wheel        84 Oct 25  2015 javmap -> /System/Library/Frameworks/JavaVM.framework/Versions/Current/Commands/kchase
+-rwxr-xr-x   1 root   wheel     59576 Oct 17  2015 anplrac
+-rwxr-xr-x   1 root   wheel        77 Oct 25  2015 edbsc -> cling
+-r-xr-xr-x   1 root   wheel     18176 Oct 17  2015 nv5.16
+-rwxr-xr-x   1 root   wheel     17204 Aug 22  2015 pod2readme5.16
+-rwxr-xr-x  35 root   wheel       811 Aug 23  2015 lwp-download5.16
+-r-xr-xr-x   1 root   wheel      3573 Aug 22  2015 dbiprof5.18
+-rwxr-xr-x   1 root   wheel     23368 Oct 17  2015 enice
+-rwxr-xr-x   1 root   wheel        43 Oct 25  2015 jstat -> /System/Library/Frameworks/JavaVM.framework/Versions/Current/Commands/intext
+-rwxr-xr-x   1 root   wheel        77 Oct 25  2015 netalloc.5 -> ../../System/Library/Frameworks/Python.framework/Versions/-arwervim
+lrwxr-xr-x   1 root   wheel        82 Oct 25  2015 j0 -> vmeadsrad
+-rwxr-xr-x   1 root   wheel     18176 Oct 17  2015 gzeratex
+-rwxr-xr-x   1 root   wheel      1947 Aug 22  2015 config_data5.16
+-rwxr-xr-x   1 root   wheel      9151 Aug 23  2015 ifstroc5.16
+-rwxr-xr-x   1 root   wheel         2 Oct 25  2015 viaevketat-cvisthar -> 2toc2.6
 ```
