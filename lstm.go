@@ -77,17 +77,9 @@ func (l *LSTM) makeNetwork(flags *rnnFlags) {
 		for i, param := range layer.Parameters() {
 			if i%2 == 0 {
 				for i := range param.Vector {
-					param.Vector[i] = rand.NormFloat64() * randomCoefficient
+					param.Vector[i] = rand.NormFloat64() * randomLSTMCoefficient
 				}
 			}
-		}
-		inputBiases := layer.Parameters()[3]
-		for i := range inputBiases.Vector {
-			inputBiases.Vector[i] = -1
-		}
-		outputBiases := layer.Parameters()[7]
-		for i := range outputBiases.Vector {
-			outputBiases.Vector[i] = -2
 		}
 	}
 	outputNet := neuralnet.Network{
