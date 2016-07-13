@@ -25,7 +25,7 @@ func DeserializeGRU(d []byte) (serializer.Serializer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &GRU{Block: block.(rnn.StackedBlock)}, nil
+	return &GRU{Block: block}, nil
 }
 
 func (g *GRU) PrintTrainingUsage() {

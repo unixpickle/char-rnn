@@ -25,7 +25,7 @@ func DeserializeLSTM(d []byte) (serializer.Serializer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &LSTM{Block: block.(rnn.StackedBlock)}, nil
+	return &LSTM{Block: block}, nil
 }
 
 func (l *LSTM) PrintTrainingUsage() {
