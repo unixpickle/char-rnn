@@ -21,7 +21,7 @@ This will generate an executable called `char-rnn` in your current directory. If
 You can train char-rnn on some data as follows:
 
 ```
-$ ./char-rnn train lstm /path/to/lstm /path/to/text
+$ ./char-rnn train lstm /path/to/lstm /path/to/sample/directory
 2016/06/22 17:52:53 Loaded model from file.
 2016/06/22 17:52:53 Training LSTM on 22308 samples...
 2016/06/22 17:59:29 Epoch 0: cost=1857807.936353
