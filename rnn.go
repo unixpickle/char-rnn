@@ -14,6 +14,7 @@ import (
 	"github.com/unixpickle/sgd"
 	"github.com/unixpickle/weakai/neuralnet"
 	"github.com/unixpickle/weakai/rnn"
+	"github.com/unixpickle/weakai/rnn/seqtoseq"
 )
 
 const (
@@ -29,14 +30,20 @@ const (
 	maxLanes          = 21
 )
 
+type RNNLearner interface {
+	sgd.Learner
+	rnn.Block
+}
+
 type trainToggler interface {
 	toggleTraining(bool)
 }
 
-func TrainRNN(b rnn.BlockLearner, t trainToggler, seqs sgd.SampleSet, flags *rnnFlags) {
+func TrainRNN(b RNNLearner, t trainToggler, seqs sgd.SampleSet, flags *rnnFlags) {
 	costFunc := neuralnet.DotCost{}
 	gradienter := &sgd.Adam{
-		Gradienter: &rnn.TruncatedBPTT{
+		Gradienter: &seqtoseq.TruncatedBPTT{
+			Block:    b,
 			Learner:  b,
 			CostFunc: costFunc,
 			MaxLanes: maxLanes,
@@ -53,8 +60,7 @@ func TrainRNN(b rnn.BlockLearner, t trainToggler, seqs sgd.SampleSet, flags *rnn
 		t.toggleTraining(false)
 		defer t.toggleTraining(true)
 
-		runner := &rnn.Runner{Block: b}
-		cost := runner.TotalCost(validateBatchSize, seqs, costFunc)
+		cost := seqtoseq.TotalCostBlock(b, validateBatchSize, seqs, costFunc)
 		log.Printf("Epoch %d: cost=%f", epoch, cost)
 
 		epoch++

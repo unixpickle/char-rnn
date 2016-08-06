@@ -9,7 +9,7 @@ import (
 
 	"github.com/unixpickle/num-analysis/linalg"
 	"github.com/unixpickle/sgd"
-	"github.com/unixpickle/weakai/rnn"
+	"github.com/unixpickle/weakai/rnn/seqtoseq"
 )
 
 const (
@@ -72,8 +72,8 @@ func (s SampleSet) Subset(start, end int) sgd.SampleSet {
 	return s[start:end]
 }
 
-func seqForChunk(chunk []byte) rnn.Sequence {
-	var res rnn.Sequence
+func seqForChunk(chunk []byte) seqtoseq.Sample {
+	var res seqtoseq.Sample
 	for i, x := range chunk {
 		res.Outputs = append(res.Outputs, oneHotAscii(x))
 		if i == 0 {
