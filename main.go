@@ -12,7 +12,7 @@ import (
 	"github.com/unixpickle/serializer"
 )
 
-var Models = []Model{&LSTM{}, &GRU{}}
+var Models = []Model{&LSTM{}, &GRU{}, &StateBrain{}}
 
 const OutputPermissions = 0755
 
