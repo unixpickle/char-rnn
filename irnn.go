@@ -79,7 +79,7 @@ func (i *IRNN) makeNetwork(flags *rnnFlags) {
 	outputNet := neuralnet.Network{
 		&neuralnet.DenseLayer{
 			InputCount:  flags.HiddenSize,
-			OutputCount: flags.HiddenSize,
+			OutputCount: CharCount,
 		},
 		&neuralnet.LogSoftmaxLayer{},
 	}
