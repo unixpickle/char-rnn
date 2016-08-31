@@ -8,6 +8,7 @@ const (
 	serializerTypeGRU        = serializerTypePrefix + "GRU"
 	serializerTypeStateBrain = serializerTypePrefix + "StateBrain"
 	serializerTypeIRNN       = serializerTypePrefix + "IRNN"
+	serializerTypeNPRNN      = serializerTypePrefix + "NPRNN"
 )
 
 func init() {
@@ -15,4 +16,5 @@ func init() {
 	serializer.RegisterDeserializer(serializerTypeGRU, DeserializeGRU)
 	serializer.RegisterDeserializer(serializerTypeStateBrain, DeserializeStateBrain)
 	serializer.RegisterDeserializer(serializerTypeIRNN, DeserializeIRNN)
+	serializer.RegisterDeserializer(serializerTypeNPRNN, DeserializeNPRNN)
 }
