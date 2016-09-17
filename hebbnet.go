@@ -70,7 +70,7 @@ func (h *HebbNet) makeNetwork(flags *rnnFlags) {
 		if j > 0 {
 			inputSize = flags.HiddenSize
 		}
-		layer := hebbnet.NewDenseLayer(inputSize, flags.HiddenSize)
+		layer := hebbnet.NewDenseLayer(inputSize, flags.HiddenSize, true)
 		layer.UseActivation = true
 		h.Block = append(h.Block, layer)
 	}
