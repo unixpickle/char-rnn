@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/unixpickle/num-analysis/linalg"
@@ -28,6 +29,15 @@ func ReadSampleSet(dir string) SampleSet {
 
 	var result SampleSet
 
+	chunkSize := TextChunkSize
+	if csVar := os.Getenv("TEXT_CHUNK_SIZE"); csVar != "" {
+		chunkSize, err = strconv.Atoi(csVar)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Invalid TEXT_CHUNK_SIZE value:", csVar)
+			os.Exit(1)
+		}
+	}
+
 	for _, item := range contents {
 		if strings.HasPrefix(item.Name(), ".") {
 			continue
@@ -38,8 +48,8 @@ func ReadSampleSet(dir string) SampleSet {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
-		for i := 0; i < len(textContents); i += TextChunkSize {
-			bs := TextChunkSize
+		for i := 0; i < len(textContents); i += chunkSize {
+			bs := chunkSize
 			if bs > len(textContents)-i {
 				bs = len(textContents) - i
 			}
