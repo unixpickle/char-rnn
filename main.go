@@ -126,6 +126,8 @@ func dieUsage() {
 	for _, m := range Models {
 		fmt.Fprintln(os.Stderr, " "+m.Name())
 	}
+	fmt.Fprintln(os.Stderr, "\nEnvironment variables:")
+	fmt.Fprintln(os.Stderr, " TEXT_CHUNK_SIZE   characters per sample")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(1)
 }
