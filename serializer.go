@@ -10,6 +10,7 @@ const (
 	serializerTypeIRNN       = serializerTypePrefix + "IRNN"
 	serializerTypeNPRNN      = serializerTypePrefix + "NPRNN"
 	serializerTypeHebbNet    = serializerTypePrefix + "HebbNet"
+	serializerTypeFFStruct   = serializerTypePrefix + "FFStruct"
 )
 
 func init() {
@@ -19,4 +20,5 @@ func init() {
 	serializer.RegisterDeserializer(serializerTypeIRNN, DeserializeIRNN)
 	serializer.RegisterDeserializer(serializerTypeNPRNN, DeserializeNPRNN)
 	serializer.RegisterDeserializer(serializerTypeHebbNet, DeserializeHebbNet)
+	serializer.RegisterDeserializer(serializerTypeFFStruct, DeserializeFFStruct)
 }

@@ -12,7 +12,8 @@ import (
 	"github.com/unixpickle/serializer"
 )
 
-var Models = []Model{&LSTM{}, &GRU{}, &StateBrain{}, &IRNN{}, &NPRNN{}, &HebbNet{}}
+var Models = []Model{&LSTM{}, &GRU{}, &StateBrain{}, &IRNN{}, &NPRNN{},
+	&HebbNet{}, &FFStruct{}}
 
 const OutputPermissions = 0755
 

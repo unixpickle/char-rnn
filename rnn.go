@@ -39,6 +39,10 @@ type trainToggler interface {
 	toggleTraining(bool)
 }
 
+type timeStepper interface {
+	StepTime(x linalg.Vector) linalg.Vector
+}
+
 func TrainRNN(b RNNLearner, t trainToggler, seqs sgd.SampleSet, flags *rnnFlags) {
 	costFunc := neuralnet.DotCost{}
 	gradienter := &sgd.Adam{
@@ -69,6 +73,10 @@ func TrainRNN(b RNNLearner, t trainToggler, seqs sgd.SampleSet, flags *rnnFlags)
 }
 
 func GenerateRNN(b rnn.Block, t trainToggler, length int, args []string) string {
+	return generateTimeStepper(&rnn.Runner{Block: b}, t, length, args)
+}
+
+func generateTimeStepper(step timeStepper, t trainToggler, length int, args []string) string {
 	temp := 1.0
 	if len(args) == 1 {
 		var err error
@@ -82,11 +90,10 @@ func GenerateRNN(b rnn.Block, t trainToggler, length int, args []string) string 
 	t.toggleTraining(false)
 
 	var res bytes.Buffer
-	runner := &rnn.Runner{Block: b}
 	input := make(linalg.Vector, CharCount)
 	input[0] = 1
 	for i := 0; i < length; i++ {
-		output := runner.StepTime(input)
+		output := step.StepTime(input)
 		idx := chooseLogIndex(output, temp)
 		input = make(linalg.Vector, CharCount)
 		input[idx] = 1
