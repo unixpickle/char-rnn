@@ -69,7 +69,7 @@ func (f *FFStruct) makeNetwork(flags *rnnFlags) {
 		&neuralnet.RescaleLayer{Bias: -mean, Scale: 1 / stddev},
 	}
 
-	structure := f.makeStruct(flags.HiddenSize)
+	structure := f.makeStruct()
 
 	var block rnn.StackedBlock
 	block = append(block, rnn.NewNetworkBlock(inNet, 0))
@@ -104,13 +104,13 @@ func (f *FFStruct) makeNetwork(flags *rnnFlags) {
 	}
 }
 
-func (f *FFStruct) makeStruct(hidden int) neuralstruct.RStruct {
+func (f *FFStruct) makeStruct() neuralstruct.RStruct {
 	return neuralstruct.RAggregate{
-		&neuralstruct.Queue{VectorSize: hidden},
-		&neuralstruct.Queue{VectorSize: hidden},
-		&neuralstruct.Queue{VectorSize: hidden},
-		&neuralstruct.Stack{VectorSize: hidden, NoReplace: true},
-		&neuralstruct.Stack{VectorSize: hidden, NoReplace: true},
-		&neuralstruct.Stack{VectorSize: hidden, NoReplace: true},
+		&neuralstruct.Queue{VectorSize: 6},
+		&neuralstruct.Queue{VectorSize: 6},
+		&neuralstruct.Queue{VectorSize: 6},
+		&neuralstruct.Stack{VectorSize: 6, NoReplace: true},
+		&neuralstruct.Stack{VectorSize: 6, NoReplace: true},
+		&neuralstruct.Stack{VectorSize: 6, NoReplace: true},
 	}
 }
