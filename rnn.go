@@ -46,13 +46,11 @@ type timeStepper interface {
 func TrainRNN(b RNNLearner, t trainToggler, seqs sgd.SampleSet, flags *rnnFlags) {
 	costFunc := neuralnet.DotCost{}
 	gradienter := &sgd.Adam{
-		Gradienter: &seqtoseq.TruncatedBPTT{
-			Block:    b,
+		Gradienter: &seqtoseq.Gradienter{
+			SeqFunc:  &rnn.BlockSeqFunc{B: b},
 			Learner:  b,
 			CostFunc: costFunc,
 			MaxLanes: maxLanes,
-			HeadSize: flags.HeadSize,
-			TailSize: flags.TailSize,
 		},
 	}
 
@@ -111,9 +109,6 @@ type rnnFlags struct {
 	HiddenSize    int
 	Layers        int
 	HiddenDropout float64
-
-	HeadSize int
-	TailSize int
 }
 
 func newRNNFlags(cmdName string) *rnnFlags {
@@ -125,8 +120,6 @@ func newRNNFlags(cmdName string) *rnnFlags {
 	res.FlagSet.IntVar(&res.Layers, "layers", defaultRNNLayerCount, "number of layers")
 	res.FlagSet.Float64Var(&res.HiddenDropout, "dropout", defaultRNNHiddenDropout,
 		"hidden dropout (1=no dropout)")
-	res.FlagSet.IntVar(&res.HeadSize, "headsize", defaultRNNHeadSize, "TBPTT head size")
-	res.FlagSet.IntVar(&res.TailSize, "tailsize", defaultRNNTailSize, "TBPTT tail size")
 	return res
 }
 

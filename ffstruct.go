@@ -13,19 +13,19 @@ import (
 )
 
 type FFStruct struct {
-	SeqFunc *neuralstruct.SeqFunc
+	Block *neuralstruct.Block
 }
 
 func DeserializeFFStruct(d []byte) (serializer.Serializer, error) {
-	sf, err := neuralstruct.DeserializeSeqFunc(d)
+	b, err := neuralstruct.DeserializeBlock(d)
 	if err != nil {
 		return nil, err
 	}
-	return &FFStruct{SeqFunc: sf}, nil
+	return &FFStruct{Block: b}, nil
 }
 
 func (f *FFStruct) PrintTrainingUsage() {
-	newStructRNNFlags(f.Name()).FlagSet.PrintDefaults()
+	newRNNFlags(f.Name()).FlagSet.PrintDefaults()
 }
 
 func (f *FFStruct) PrintGenerateUsage() {
@@ -33,18 +33,18 @@ func (f *FFStruct) PrintGenerateUsage() {
 }
 
 func (f *FFStruct) Train(seqs sgd.SampleSet, args []string) {
-	flags := newStructRNNFlags(f.Name())
+	flags := newRNNFlags(f.Name())
 	flags.FlagSet.Parse(args)
 	f.makeNetwork(flags)
-	TrainStructRNN(f.SeqFunc, f, seqs, flags)
+	TrainRNN(f.Block, f, seqs, flags)
 }
 
 func (f *FFStruct) Generate(length int, args []string) string {
-	return GenerateStructRNN(f.SeqFunc, f, length, args)
+	return GenerateRNN(f.Block, f, length, args)
 }
 
 func (f *FFStruct) Serialize() ([]byte, error) {
-	return f.SeqFunc.Serialize()
+	return f.Block.Serialize()
 }
 
 func (f *FFStruct) SerializerType() string {
@@ -55,8 +55,12 @@ func (f *FFStruct) Name() string {
 	return "ffstruct"
 }
 
-func (f *FFStruct) makeNetwork(flags *structRNNFlags) {
-	if f.SeqFunc != nil {
+func (f *FFStruct) toggleTraining(training bool) {
+	// Simply implemented to support the RNN routines.
+}
+
+func (f *FFStruct) makeNetwork(flags *rnnFlags) {
+	if f.Block != nil {
 		return
 	}
 	mean := 1.0 / CharCount
@@ -65,7 +69,7 @@ func (f *FFStruct) makeNetwork(flags *structRNNFlags) {
 		&neuralnet.RescaleLayer{Bias: -mean, Scale: 1 / stddev},
 	}
 
-	structure := f.makeStruct()
+	structure := f.makeStruct(flags.HiddenSize)
 
 	var block rnn.StackedBlock
 	block = append(block, rnn.NewNetworkBlock(inNet, 0))
@@ -94,23 +98,19 @@ func (f *FFStruct) makeNetwork(flags *structRNNFlags) {
 	outputNet.Randomize()
 	block = append(block, rnn.NewNetworkBlock(outputNet, 0))
 
-	f.SeqFunc = &neuralstruct.SeqFunc{
+	f.Block = &neuralstruct.Block{
 		Block:  block,
 		Struct: structure,
 	}
 }
 
-func (f *FFStruct) makeStruct() neuralstruct.RStruct {
+func (f *FFStruct) makeStruct(hidden int) neuralstruct.RStruct {
 	return neuralstruct.RAggregate{
-		&neuralstruct.Queue{VectorSize: 6},
-		&neuralstruct.Queue{VectorSize: 6},
-		&neuralstruct.Queue{VectorSize: 6},
-		&neuralstruct.Stack{VectorSize: 6, NoReplace: true},
-		&neuralstruct.Stack{VectorSize: 6, NoReplace: true},
-		&neuralstruct.Stack{VectorSize: 6, NoReplace: true},
+		&neuralstruct.Queue{VectorSize: hidden},
+		&neuralstruct.Queue{VectorSize: hidden},
+		&neuralstruct.Queue{VectorSize: hidden},
+		&neuralstruct.Stack{VectorSize: hidden, NoReplace: true},
+		&neuralstruct.Stack{VectorSize: hidden, NoReplace: true},
+		&neuralstruct.Stack{VectorSize: hidden, NoReplace: true},
 	}
-}
-
-func (f *FFStruct) toggleTraining(training bool) {
-	// Simply implemented to support the RNN routines.
 }
