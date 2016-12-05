@@ -34,7 +34,7 @@ If the `/path/to/lstm` file already exists, it will be loaded as an LSTM and tra
 
 It may take a while to train the LSTM reasonably well. On karpathy's [tinyshakespeare](https://github.com/karpathy/char-rnn/tree/6f9487a6fe5b420b7ca9afb0d7c078e37c1d1b4e/data/tinyshakespeare), it took my Intel NUC (quad-core i3 with 1.7GHz) roughly 18 hours to train reasonably well (although for much of that time I was only using a single CPU core).
 
-To pause or stop training, press Ctrl+C exactly once. This will finish the current epoch and then terminate the program (which may take somewhere on the magnitude of a few hours, if your data set is large). Once the program has terminated, a trained LSTM will be saved to `/path/to/lstm`. **Note:** if you hit Ctrl+C more than once, the program will terminate without saving.
+To pause or stop training, press Ctrl+C exactly once. This will finish the current mini-batch and then terminate the program. Once the program has terminated, a trained LSTM will be saved to `/path/to/lstm`. **Note:** if you hit Ctrl+C more than once, the program will terminate without saving.
 
 ## Generating text
 

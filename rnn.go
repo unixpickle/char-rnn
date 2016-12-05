@@ -58,12 +58,12 @@ func TrainRNN(b RNNLearner, t trainToggler, seqs sgd.SampleSet, flags *rnnFlags)
 	log.Println("Training model on", seqs.Len(), "samples...")
 
 	var epoch int
-	sgd.SGDInteractive(gradienter, seqs, flags.StepSize, flags.BatchSize, func() bool {
+	sgd.SGDMini(gradienter, seqs, flags.StepSize, flags.BatchSize, func(s sgd.SampleSet) bool {
 		t.toggleTraining(false)
 		defer t.toggleTraining(true)
 
-		cost := seqtoseq.TotalCostBlock(b, validateBatchSize, seqs, costFunc)
-		log.Printf("Epoch %d: cost=%f", epoch, cost)
+		cost := seqtoseq.TotalCostBlock(b, validateBatchSize, s, costFunc)
+		log.Printf("batch %d: cost=%f", epoch, cost)
 
 		epoch++
 		return true
