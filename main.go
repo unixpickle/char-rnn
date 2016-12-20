@@ -13,7 +13,7 @@ import (
 )
 
 var Models = []Model{&LSTM{}, &GRU{}, &StateBrain{}, &IRNN{}, &NPRNN{},
-	&HebbNet{}, &FFStruct{}}
+	&HebbNet{}, &FFStruct{}, &CWRNN{}}
 
 const OutputPermissions = 0755
 
