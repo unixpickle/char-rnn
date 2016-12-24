@@ -30,12 +30,16 @@ func ReadSampleSet(dir string) SampleSet {
 	var result SampleSet
 
 	chunkSize := TextChunkSize
+	headOnly := false
 	if csVar := os.Getenv("TEXT_CHUNK_SIZE"); csVar != "" {
 		chunkSize, err = strconv.Atoi(csVar)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Invalid TEXT_CHUNK_SIZE value:", csVar)
 			os.Exit(1)
 		}
+	}
+	if os.Getenv("TEXT_CHUNK_HEAD_ONLY") != "" {
+		headOnly = true
 	}
 
 	for _, item := range contents {
@@ -54,6 +58,9 @@ func ReadSampleSet(dir string) SampleSet {
 				bs = len(textContents) - i
 			}
 			result = append(result, textContents[i:i+bs])
+			if headOnly {
+				break
+			}
 		}
 	}
 

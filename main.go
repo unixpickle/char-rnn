@@ -128,8 +128,9 @@ func dieUsage() {
 		fmt.Fprintln(os.Stderr, " "+m.Name())
 	}
 	fmt.Fprintln(os.Stderr, "\nEnvironment variables:")
-	fmt.Fprintf(os.Stderr, " TEXT_CHUNK_SIZE   characters per sample (default %d)\n",
+	fmt.Fprintf(os.Stderr, " TEXT_CHUNK_SIZE      chars per sample (default %d)\n",
 		TextChunkSize)
+	fmt.Fprintln(os.Stderr, " TEXT_CHUNK_HEAD_ONLY only use heads of samples")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(1)
 }
