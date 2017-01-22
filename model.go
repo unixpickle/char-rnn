@@ -1,23 +1,21 @@
-package main
+package charrnn
 
 import (
+	"flag"
+
 	"github.com/unixpickle/serializer"
-	"github.com/unixpickle/sgd"
 )
 
+// A Model is a trainable language model for predicting
+// characters in a string.
 type Model interface {
 	serializer.Serializer
 
-	PrintTrainingUsage()
-	PrintGenerateUsage()
-
-	// Train trains the model using a SampleSet full of
-	// rnn.Sequence instances.
-	Train(samples sgd.SampleSet, arguments []string)
-
-	// Generate generates a new string of text using the
-	// model.
-	Generate(length int, arguments []string) string
-
 	Name() string
+
+	TrainingFlags() *flag.FlagSet
+	GenerationFlags() *flag.FlagSet
+
+	Train(samples SampleList)
+	Generate()
 }

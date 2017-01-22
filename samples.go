@@ -1,4 +1,4 @@
-package main
+package charrnn
 
 import (
 	"fmt"
@@ -8,9 +8,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/unixpickle/num-analysis/linalg"
-	"github.com/unixpickle/sgd"
-	"github.com/unixpickle/weakai/rnn/seqtoseq"
+	"github.com/unixpickle/anynet/anys2s"
+	"github.com/unixpickle/anynet/anysgd"
+	"github.com/unixpickle/anyvec"
+	"github.com/unixpickle/anyvec/anyvec32"
 )
 
 const (
@@ -18,16 +19,16 @@ const (
 	CharCount     = 256
 )
 
-type SampleSet [][]byte
+type SampleList [][]byte
 
-func ReadSampleSet(dir string) SampleSet {
+func ReadSampleList(dir string) SampleList {
 	contents, err := ioutil.ReadDir(dir)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	var result SampleSet
+	var result SampleList
 
 	chunkSize := TextChunkSize
 	headOnly := false
@@ -67,43 +68,37 @@ func ReadSampleSet(dir string) SampleSet {
 	return result
 }
 
-func (s SampleSet) Len() int {
+func (s SampleList) Len() int {
 	return len(s)
 }
 
-func (s SampleSet) Copy() sgd.SampleSet {
-	res := make(SampleSet, len(s))
-	copy(res, s)
-	return res
-}
-
-func (s SampleSet) Swap(i, j int) {
+func (s SampleList) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func (s SampleSet) GetSample(idx int) interface{} {
+func (s SampleList) Slice(start, end int) anysgd.SampleList {
+	return append(SampleList{}, s[start:end]...)
+}
+
+func (s SampleList) GetSample(idx int) *anys2s.Sample {
 	return seqForChunk(s[idx])
 }
 
-func (s SampleSet) Subset(start, end int) sgd.SampleSet {
-	return s[start:end]
-}
-
-func seqForChunk(chunk []byte) seqtoseq.Sample {
-	var res seqtoseq.Sample
+func seqForChunk(chunk []byte) *anys2s.Sample {
+	var res anys2s.Sample
 	for i, x := range chunk {
-		res.Outputs = append(res.Outputs, oneHotAscii(x))
+		res.Output = append(res.Output, oneHotAscii(x))
 		if i == 0 {
-			res.Inputs = append(res.Inputs, oneHotAscii(0))
+			res.Input = append(res.Input, oneHotAscii(0))
 		} else {
-			res.Inputs = append(res.Inputs, oneHotAscii(chunk[i-1]))
+			res.Input = append(res.Input, oneHotAscii(chunk[i-1]))
 		}
 	}
-	return res
+	return &res
 }
 
-func oneHotAscii(b byte) linalg.Vector {
-	res := make(linalg.Vector, CharCount)
+func oneHotAscii(b byte) anyvec.Vector {
+	res := make([]float32, CharCount)
 	res[int(b)] = 1
-	return res
+	return anyvec32.MakeVectorData(res)
 }

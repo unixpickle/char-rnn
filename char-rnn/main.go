@@ -6,14 +6,13 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"strconv"
 	"time"
 
+	charrnn "github.com/unixpickle/char-rnn"
 	"github.com/unixpickle/serializer"
 )
 
-var Models = []Model{&LSTM{}, &GRU{}, &StateBrain{}, &IRNN{}, &NPRNN{},
-	&HebbNet{}, &FFStruct{}, &CWRNN{}}
+var Models = []charrnn.Model{&charrnn.LSTM{}}
 
 const OutputPermissions = 0755
 
@@ -43,7 +42,7 @@ func trainCommand() {
 	modelFile := os.Args[3]
 
 	model := modelForName(os.Args[2])
-	samples := ReadSampleSet(os.Args[4])
+	samples := charrnn.ReadSampleList(os.Args[4])
 	modelData, err := ioutil.ReadFile(modelFile)
 
 	if err == nil {
@@ -53,7 +52,7 @@ func trainCommand() {
 			os.Exit(1)
 		}
 		var ok bool
-		model, ok = x.(Model)
+		model, ok = x.(charrnn.Model)
 		if !ok {
 			fmt.Fprintf(os.Stderr, "Loaded type was not a model but a %T\n", x)
 			os.Exit(1)
@@ -63,7 +62,8 @@ func trainCommand() {
 		log.Println("Created new model.")
 	}
 
-	model.Train(samples, os.Args[5:])
+	model.TrainingFlags().Parse(os.Args[5:])
+	model.Train(samples)
 
 	encoded, err := serializer.SerializeWithType(model)
 	if err != nil {
@@ -77,14 +77,8 @@ func trainCommand() {
 }
 
 func genCommand() {
-	if len(os.Args) < 4 {
+	if len(os.Args) < 3 {
 		dieUsage()
-	}
-
-	size, err := strconv.Atoi(os.Args[3])
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Invalid size:", os.Args[3])
-		os.Exit(1)
 	}
 
 	modelData, err := ioutil.ReadFile(os.Args[2])
@@ -99,13 +93,14 @@ func genCommand() {
 		os.Exit(1)
 	}
 
-	model, ok := x.(Model)
+	model, ok := x.(charrnn.Model)
 	if !ok {
 		fmt.Fprintf(os.Stderr, "Loaded type was not a model but a %T\n", x)
 		os.Exit(1)
 	}
 
-	fmt.Println(model.Generate(size, os.Args[4:]))
+	model.GenerationFlags().Parse(os.Args[3:])
+	model.Generate()
 }
 
 func helpCommand() {
@@ -114,14 +109,14 @@ func helpCommand() {
 	}
 	m := modelForName(os.Args[2])
 	fmt.Fprintf(os.Stderr, "Usage for training:\n\n")
-	m.PrintTrainingUsage()
+	m.TrainingFlags().PrintDefaults()
 	fmt.Fprintf(os.Stderr, "\nUsage for generation:\n\n")
-	m.PrintGenerateUsage()
+	m.GenerationFlags().PrintDefaults()
 }
 
 func dieUsage() {
 	fmt.Fprintln(os.Stderr, "Usage: char-rnn train <model> <rnn-file> <sample dir> [args]\n"+
-		"       char-rnn gen <rnn-file> <chars> [args]\n"+
+		"       char-rnn gen <rnn-file> [args]\n"+
 		"       char-rnn help <model>\n\n"+
 		"Available models:")
 	for _, m := range Models {
@@ -129,13 +124,13 @@ func dieUsage() {
 	}
 	fmt.Fprintln(os.Stderr, "\nEnvironment variables:")
 	fmt.Fprintf(os.Stderr, " TEXT_CHUNK_SIZE      chars per sample (default %d)\n",
-		TextChunkSize)
+		charrnn.TextChunkSize)
 	fmt.Fprintln(os.Stderr, " TEXT_CHUNK_HEAD_ONLY only use heads of samples")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(1)
 }
 
-func modelForName(name string) Model {
+func modelForName(name string) charrnn.Model {
 	for _, m := range Models {
 		if m.Name() == name {
 			return m
