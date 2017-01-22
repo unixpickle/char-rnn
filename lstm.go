@@ -2,13 +2,17 @@ package charrnn
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"math"
+	"math/rand"
 
 	"github.com/unixpickle/anydiff/anyseq"
 	"github.com/unixpickle/anynet"
 	"github.com/unixpickle/anynet/anyrnn"
 	"github.com/unixpickle/anynet/anys2s"
 	"github.com/unixpickle/anynet/anysgd"
+	"github.com/unixpickle/anyvec"
 	"github.com/unixpickle/anyvec/anyvec32"
 	"github.com/unixpickle/rip"
 	"github.com/unixpickle/serializer"
@@ -69,7 +73,22 @@ func (l *LSTM) Train(samples SampleList) {
 }
 
 func (l *LSTM) Generate() {
-	// TODO: this.
+	state := l.Block.Start(1)
+
+	last := anyvec32.MakeVector(CharCount)
+	for i := 0; i < l.Length; i++ {
+		res := l.Block.Step(state, last)
+		ch := sampleSoftmax(res.Output())
+
+		fmt.Print(string([]byte{byte(ch)}))
+
+		v := make([]float32, CharCount)
+		v[ch] = 1
+		last = anyvec32.MakeVectorData(v)
+		state = res.State()
+	}
+
+	fmt.Println()
 }
 
 func (l *LSTM) Name() string {
@@ -131,4 +150,15 @@ func (l *lstmGenerationFlags) GenerationFlags() *flag.FlagSet {
 	res := flag.NewFlagSet("lstm", flag.ExitOnError)
 	res.IntVar(&l.Length, "length", 100, "generated string length")
 	return res
+}
+
+func sampleSoftmax(vec anyvec.Vector) int {
+	p := rand.Float64()
+	for i, x := range vec.Data().([]float32) {
+		p -= math.Exp(float64(x))
+		if p < 0 {
+			return i
+		}
+	}
+	return CharCount - 1
 }
