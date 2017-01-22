@@ -57,8 +57,8 @@ func (l *LSTM) Train(samples SampleList) {
 		Gradienter:  g,
 		Transformer: &anysgd.Adam{},
 		Samples: &anys2s.SortSampleList{
-			SampleList: samples,
-			BatchSize:  l.SortBatch,
+			SortableSampleList: samples,
+			BatchSize:          l.SortBatch,
 		},
 		Rater: anysgd.ConstRater(l.StepSize),
 		StatusFunc: func(s anysgd.SampleList) {

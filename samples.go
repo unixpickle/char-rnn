@@ -80,6 +80,10 @@ func (s SampleList) Slice(start, end int) anysgd.SampleList {
 	return append(SampleList{}, s[start:end]...)
 }
 
+func (s SampleList) LenAt(idx int) int {
+	return len(s[idx])
+}
+
 func (s SampleList) GetSample(idx int) *anys2s.Sample {
 	return seqForChunk(s[idx])
 }
