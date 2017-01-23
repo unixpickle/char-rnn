@@ -44,32 +44,34 @@ func (l *LSTM) Train(samples SampleList) {
 		l.createModel()
 	}
 
-	g := &anys2s.Gradienter{
+	t := &anys2s.Trainer{
 		Func: func(s anyseq.Seq) anyseq.Seq {
 			return anyrnn.Map(s, l.Block)
 		},
-		Cost:   anynet.DotCost{},
-		Params: l.Block.(anynet.Parameterizer).Parameters(),
+		Cost:    anynet.DotCost{},
+		Params:  l.Block.(anynet.Parameterizer).Parameters(),
+		Average: true,
 	}
 
 	var iter int
 	sgd := &anysgd.SGD{
-		Gradienter:  g,
+		Fetcher:     t,
+		Gradienter:  t,
 		Transformer: &anysgd.Adam{},
 		Samples: &anys2s.SortSampleList{
 			SortableSampleList: samples,
 			BatchSize:          l.SortBatch,
 		},
 		Rater: anysgd.ConstRater(l.StepSize),
-		StatusFunc: func(s anysgd.SampleList) {
-			log.Printf("iter %d: cost=%f", iter, g.LastCost)
+		StatusFunc: func(b anysgd.Batch) {
+			log.Printf("iter %d: cost=%v", iter, t.LastCost)
 			iter++
 		},
 		BatchSize: l.BatchSize,
 	}
 
 	log.Println("Training (ctrl+c to stop)...")
-	sgd.Run(rip.NewRIP())
+	sgd.Run(rip.NewRIP().Chan())
 }
 
 func (l *LSTM) Generate() {
