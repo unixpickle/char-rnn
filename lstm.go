@@ -108,9 +108,10 @@ func (l *LSTM) Serialize() ([]byte, error) {
 func (l *LSTM) createModel() {
 	block := anyrnn.Stack{}
 	inCount := CharCount
+	scaler := anyvec32.MakeNumeric(16)
 	for i := 0; i < l.Layers; i++ {
-		block = append(block, anyrnn.NewLSTM(anyvec32.CurrentCreator(),
-			inCount, l.Hidden))
+		lstm := anyrnn.NewLSTM(anyvec32.CurrentCreator(), inCount, l.Hidden)
+		block = append(block, lstm.ScaleInWeights(scaler))
 		inCount = l.Hidden
 	}
 	block = append(block, &anyrnn.LayerBlock{
