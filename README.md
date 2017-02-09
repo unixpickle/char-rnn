@@ -9,12 +9,12 @@ First, gather a folder with a bunch of text files in it (or with one big text fi
 Now, install [Go](https://golang.org/doc/install) and setup a GOPATH. Once this is done, you are ready to install char-rnn itself:
 
 ```
-$ go get -u github.com/unixpickle/char-rnn
-$ cd $GOPATH/src/github.com/unixpickle/char-rnn
+$ go get -u -d github.com/unixpickle/char-rnn
+$ cd $GOPATH/src/github.com/unixpickle/char-rnn/train
 $ go build
 ```
 
-This will generate an executable called `char-rnn` in your current directory. If you have the Go BLAS package setup to use a C implementation of BLAS, you can access that by building with `go build -tags cblas`.
+This will generate an executable called `char-rnn` in your current directory. If you have CUDA setup to work with anyvec (instructions [here](https://godoc.org/github.com/unixpickle/anyvec/cuda)), you can build with `-tags cuda` to include CUDA.
 
 ## Training
 
