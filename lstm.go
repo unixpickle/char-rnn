@@ -44,6 +44,8 @@ func (l *LSTM) Train(samples SampleList) {
 		l.createModel()
 	}
 
+	validation, training := anysgd.HashSplit(samples, l.Validation)
+
 	t := &anys2s.Trainer{
 		Func: func(s anyseq.Seq) anyseq.Seq {
 			return anyrnn.Map(s, l.Block)
@@ -53,18 +55,34 @@ func (l *LSTM) Train(samples SampleList) {
 		Average: true,
 	}
 
+	log.Println("Got", training.Len(), "training and", validation.Len(),
+		"validation samples")
+
 	var iter int
 	sgd := &anysgd.SGD{
 		Fetcher:     t,
 		Gradienter:  t,
 		Transformer: &anysgd.Adam{},
 		Samples: &anys2s.SortSampleList{
-			SortableSampleList: samples,
+			SortableSampleList: training.(SampleList),
 			BatchSize:          l.SortBatch,
 		},
 		Rater: anysgd.ConstRater(l.StepSize),
 		StatusFunc: func(b anysgd.Batch) {
-			log.Printf("iter %d: cost=%v", iter, t.LastCost)
+			if validation.Len() == 0 {
+				log.Printf("iter %d: cost=%v", iter, t.LastCost)
+				return
+			}
+
+			vSize := l.BatchSize
+			if vSize > validation.Len() {
+				vSize = validation.Len()
+			}
+			anysgd.Shuffle(validation)
+			validationBatch, _ := t.Fetch(validation.Slice(0, vSize))
+			v := anyvec.Sum(t.TotalCost(validationBatch.(*anys2s.Batch)).Output())
+
+			log.Printf("iter %d: cost=%v validation=%v", iter, t.LastCost, v)
 			iter++
 		},
 		BatchSize: l.BatchSize,
@@ -128,11 +146,12 @@ func (l *LSTM) createModel() {
 }
 
 type lstmTrainingFlags struct {
-	StepSize  float64
-	Hidden    int
-	Layers    int
-	BatchSize int
-	SortBatch int
+	StepSize   float64
+	Validation float64
+	Hidden     int
+	Layers     int
+	BatchSize  int
+	SortBatch  int
 }
 
 func (l *lstmTrainingFlags) TrainingFlags() *flag.FlagSet {
@@ -140,6 +159,7 @@ func (l *lstmTrainingFlags) TrainingFlags() *flag.FlagSet {
 	res.IntVar(&l.Hidden, "hidden", 512, "hidden neuron count")
 	res.IntVar(&l.Layers, "layers", 2, "LSTM layer count")
 	res.Float64Var(&l.StepSize, "step", 0.001, "step size")
+	res.Float64Var(&l.Validation, "validation", 0.1, "validation fraction")
 	res.IntVar(&l.BatchSize, "batch", 32, "SGD batch size")
 	res.IntVar(&l.SortBatch, "sortbatch", 128, "sample sort batch size")
 	return res

@@ -1,6 +1,7 @@
 package charrnn
 
 import (
+	"crypto/md5"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -90,6 +91,11 @@ func (s SampleList) GetSample(idx int) *anys2s.Sample {
 
 func (s SampleList) Creator() anyvec.Creator {
 	return anyvec32.CurrentCreator()
+}
+
+func (s SampleList) Hash(idx int) []byte {
+	res := md5.Sum(s[idx])
+	return res[:]
 }
 
 func seqForChunk(chunk []byte) *anys2s.Sample {
