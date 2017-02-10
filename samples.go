@@ -88,6 +88,10 @@ func (s SampleList) GetSample(idx int) *anys2s.Sample {
 	return seqForChunk(s[idx])
 }
 
+func (s SampleList) Creator() anyvec.Creator {
+	return anyvec32.CurrentCreator()
+}
+
 func seqForChunk(chunk []byte) *anys2s.Sample {
 	var res anys2s.Sample
 	for i, x := range chunk {
