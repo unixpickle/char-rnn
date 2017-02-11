@@ -89,6 +89,8 @@ func (l *LSTM) Train(samples SampleList) {
 	}
 
 	log.Println("Training (ctrl+c to stop)...")
+	l.setDropout(true)
+	defer l.setDropout(false)
 	sgd.Run(rip.NewRIP().Chan())
 }
 
@@ -129,7 +131,8 @@ func (l *LSTM) createModel() {
 	scaler := anyvec32.MakeNumeric(16)
 	for i := 0; i < l.Layers; i++ {
 		lstm := anyrnn.NewLSTM(anyvec32.CurrentCreator(), inCount, l.Hidden)
-		block = append(block, lstm.ScaleInWeights(scaler))
+		dropout := &anyrnn.LayerBlock{Layer: &anynet.Dropout{KeepProb: l.Dropout}}
+		block = append(block, lstm.ScaleInWeights(scaler), dropout)
 		inCount = l.Hidden
 	}
 	block = append(block, &anyrnn.LayerBlock{
@@ -145,9 +148,20 @@ func (l *LSTM) createModel() {
 	l.Block = block
 }
 
+func (l *LSTM) setDropout(enabled bool) {
+	for _, block := range l.Block.(anyrnn.Stack) {
+		if block, ok := block.(*anyrnn.LayerBlock); ok {
+			if do, ok := block.Layer.(*anynet.Dropout); ok {
+				do.Enabled = enabled
+			}
+		}
+	}
+}
+
 type lstmTrainingFlags struct {
 	StepSize   float64
 	Validation float64
+	Dropout    float64
 	Hidden     int
 	Layers     int
 	BatchSize  int
@@ -160,6 +174,7 @@ func (l *lstmTrainingFlags) TrainingFlags() *flag.FlagSet {
 	res.IntVar(&l.Layers, "layers", 2, "LSTM layer count")
 	res.Float64Var(&l.StepSize, "step", 0.001, "step size")
 	res.Float64Var(&l.Validation, "validation", 0.1, "validation fraction")
+	res.Float64Var(&l.Dropout, "dropout", 0.6, "dropout remain probability")
 	res.IntVar(&l.BatchSize, "batch", 32, "SGD batch size")
 	res.IntVar(&l.SortBatch, "sortbatch", 128, "sample sort batch size")
 	return res
