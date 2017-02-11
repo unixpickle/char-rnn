@@ -85,8 +85,8 @@ func (s SampleList) LenAt(idx int) int {
 	return len(s[idx])
 }
 
-func (s SampleList) GetSample(idx int) *anys2s.Sample {
-	return seqForChunk(s[idx])
+func (s SampleList) GetSample(idx int) (*anys2s.Sample, error) {
+	return seqForChunk(s[idx]), nil
 }
 
 func (s SampleList) Creator() anyvec.Creator {
