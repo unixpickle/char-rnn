@@ -12,7 +12,7 @@ import (
 	"github.com/unixpickle/serializer"
 )
 
-var Models = []charrnn.Model{&charrnn.LSTM{}}
+var Models = []charrnn.Model{&charrnn.LSTM{}, &charrnn.Markov{}}
 
 const OutputPermissions = 0755
 
