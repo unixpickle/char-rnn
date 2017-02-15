@@ -98,6 +98,15 @@ func (s SampleList) Hash(idx int) []byte {
 	return res[:]
 }
 
+// Bytes computes the total bytes across all samples.
+func (s SampleList) Bytes() int {
+	sum := 0
+	for _, x := range s {
+		sum += len(x)
+	}
+	return sum
+}
+
 func seqForChunk(chunk []byte) *anys2s.Sample {
 	var res anys2s.Sample
 	for i, x := range chunk {

@@ -55,8 +55,10 @@ func (l *LSTM) Train(samples SampleList) {
 		Average: true,
 	}
 
-	log.Println("Got", training.Len(), "training and", validation.Len(),
-		"validation samples")
+	log.Printf("Training: %d samples (%d bytes)", training.Len(),
+		training.(SampleList).Bytes())
+	log.Printf("Validation: %d samples (%d bytes)", validation.Len(),
+		validation.(SampleList).Bytes())
 
 	var iter int
 	sgd := &anysgd.SGD{
