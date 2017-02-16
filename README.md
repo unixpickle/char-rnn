@@ -10,7 +10,7 @@ Now, install [Go](https://golang.org/doc/install) and setup a GOPATH. Once this 
 
 ```
 $ go get -u -d github.com/unixpickle/char-rnn
-$ cd $GOPATH/src/github.com/unixpickle/char-rnn/train
+$ cd $GOPATH/src/github.com/unixpickle/char-rnn/char-rnn
 $ go build
 ```
 
