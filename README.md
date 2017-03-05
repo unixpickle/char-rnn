@@ -14,7 +14,7 @@ $ cd $GOPATH/src/github.com/unixpickle/char-rnn/char-rnn
 $ go build
 ```
 
-This will generate an executable called `char-rnn` in your current directory. If you have CUDA setup to work with anyvec (instructions [here](https://godoc.org/github.com/unixpickle/anyvec/cuda)), you can build with `-tags cuda` to include CUDA.
+This will generate an executable called `char-rnn` in your current directory. If you have CUDA bindings setup (instructions [here](https://godoc.org/github.com/unixpickle/cuda#hdr-Building)), you can build with `-tags cuda` to include CUDA.
 
 ## Training
 
