@@ -4,13 +4,13 @@ package main
 
 import (
 	"github.com/unixpickle/anyvec/anyvec32"
-	"github.com/unixpickle/anyvec/cuda"
+	"github.com/unixpickle/cudavec"
 )
 
 func init() {
-	handle, err := cuda.NewHandle()
+	handle, err := cudavec.NewHandleDefault()
 	if err != nil {
 		panic(err)
 	}
-	anyvec32.Use(cuda.NewCreator32(handle))
+	anyvec32.Use(&cudavec.Creator32{Handle: handle})
 }
