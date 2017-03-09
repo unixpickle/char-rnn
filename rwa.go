@@ -129,10 +129,11 @@ func (l *RWA) Serialize() ([]byte, error) {
 func (l *RWA) createModel() {
 	block := anyrnn.Stack{}
 	inCount := CharCount
+	scaler := anyvec32.MakeNumeric(16)
 	for i := 0; i < l.Layers; i++ {
 		rwa := rwa.NewRWA(anyvec32.CurrentCreator(), inCount, l.Hidden)
 		dropout := &anyrnn.LayerBlock{Layer: &anynet.Dropout{KeepProb: l.Dropout}}
-		block = append(block, rwa, dropout)
+		block = append(block, rwa.ScaleInWeights(scaler), dropout)
 		inCount = l.Hidden
 	}
 	block = append(block, &anyrnn.LayerBlock{
