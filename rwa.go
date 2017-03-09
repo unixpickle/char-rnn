@@ -99,10 +99,13 @@ func (l *RWA) Generate() {
 	state := l.Block.Start(1)
 
 	last := anyvec32.MakeVector(CharCount)
+	seedBytes := []byte(l.Seed)
 	for i := 0; i < l.Length; i++ {
 		res := l.Block.Step(state, last)
 		ch := sampleSoftmax(res.Output())
-
+		if i < len(seedBytes) {
+			ch = int(seedBytes[i])
+		}
 		fmt.Print(string([]byte{byte(ch)}))
 
 		v := make([]float32, CharCount)
@@ -183,10 +186,12 @@ func (l *rwaTrainingFlags) TrainingFlags() *flag.FlagSet {
 
 type rwaGenerationFlags struct {
 	Length int
+	Seed   string
 }
 
 func (l *rwaGenerationFlags) GenerationFlags() *flag.FlagSet {
 	res := flag.NewFlagSet("rwa", flag.ExitOnError)
 	res.IntVar(&l.Length, "length", 100, "generated string length")
+	res.StringVar(&l.Seed, "seed", "", "starting text")
 	return res
 }
