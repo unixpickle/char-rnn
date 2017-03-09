@@ -99,7 +99,7 @@ func (l *LSTM) Train(samples SampleList) {
 func (l *LSTM) Generate() {
 	state := l.Block.Start(1)
 
-	last := anyvec32.MakeVector(CharCount)
+	last := oneHotAscii(0)
 	for i := 0; i < l.Length; i++ {
 		res := l.Block.Step(state, last)
 		ch := sampleSoftmax(res.Output())
