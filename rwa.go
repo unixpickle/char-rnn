@@ -98,7 +98,7 @@ func (l *RWA) Train(samples SampleList) {
 func (l *RWA) Generate() {
 	state := l.Block.Start(1)
 
-	last := anyvec32.MakeVector(CharCount)
+	last := oneHotAscii(0)
 	seedBytes := []byte(l.Seed)
 	for i := 0; i < l.Length; i++ {
 		res := l.Block.Step(state, last)
