@@ -100,9 +100,13 @@ func (l *LSTM) Generate() {
 	state := l.Block.Start(1)
 
 	last := oneHotAscii(0)
+	seedBytes := []byte(l.Seed)
 	for i := 0; i < l.Length; i++ {
 		res := l.Block.Step(state, last)
 		ch := sampleSoftmax(res.Output())
+		if i < len(seedBytes) {
+			ch = int(seedBytes[i])
+		}
 
 		fmt.Print(string([]byte{byte(ch)}))
 
@@ -184,11 +188,13 @@ func (l *lstmTrainingFlags) TrainingFlags() *flag.FlagSet {
 
 type lstmGenerationFlags struct {
 	Length int
+	Seed   string
 }
 
 func (l *lstmGenerationFlags) GenerationFlags() *flag.FlagSet {
 	res := flag.NewFlagSet("lstm", flag.ExitOnError)
 	res.IntVar(&l.Length, "length", 100, "generated string length")
+	res.StringVar(&l.Seed, "seed", "", "text to start with")
 	return res
 }
 
