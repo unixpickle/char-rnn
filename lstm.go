@@ -103,7 +103,7 @@ func (l *LSTM) Generate() {
 	seedBytes := []byte(l.Seed)
 	for i := 0; i < l.Length; i++ {
 		res := l.Block.Step(state, last)
-		ch := sampleSoftmax(res.Output())
+		ch := sampleSoftmax(res.Output(), l.Temperature)
 		if i < len(seedBytes) {
 			ch = int(seedBytes[i])
 		}
@@ -187,20 +187,26 @@ func (l *lstmTrainingFlags) TrainingFlags() *flag.FlagSet {
 }
 
 type lstmGenerationFlags struct {
-	Length int
-	Seed   string
+	Length      int
+	Seed        string
+	Temperature float64
 }
 
 func (l *lstmGenerationFlags) GenerationFlags() *flag.FlagSet {
 	res := flag.NewFlagSet("lstm", flag.ExitOnError)
 	res.IntVar(&l.Length, "length", 100, "generated string length")
 	res.StringVar(&l.Seed, "seed", "", "text to start with")
+	res.Float64Var(&l.Temperature, "temperature", 1, "softmax temperature")
 	return res
 }
 
-func sampleSoftmax(vec anyvec.Vector) int {
+func sampleSoftmax(vec anyvec.Vector, temp float64) int {
+	scaled := vec.Copy()
+	scaled.Scale(vec.Creator().MakeNumeric(1 / temp))
+	anyvec.LogSoftmax(scaled, scaled.Len())
+
 	p := rand.Float64()
-	for i, x := range vec.Data().([]float32) {
+	for i, x := range scaled.Data().([]float32) {
 		p -= math.Exp(float64(x))
 		if p < 0 {
 			return i
