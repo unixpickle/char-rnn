@@ -14,6 +14,8 @@ import (
 	"github.com/unixpickle/anynet/anysgd"
 	"github.com/unixpickle/anyvec"
 	"github.com/unixpickle/anyvec/anyvec32"
+	"github.com/unixpickle/essentials"
+	"github.com/unixpickle/lazyrnn"
 	"github.com/unixpickle/rip"
 	"github.com/unixpickle/serializer"
 )
@@ -48,7 +50,15 @@ func (l *LSTM) Train(samples SampleList) {
 
 	t := &anys2s.Trainer{
 		Func: func(s anyseq.Seq) anyseq.Seq {
-			return anyrnn.Map(s, l.Block)
+			if l.LowMem {
+				inSeq := lazyrnn.Lazify(s)
+				ival := int(math.Sqrt(float64(len(s.Output()))))
+				ival = essentials.MaxInt(ival, 1)
+				out := lazyrnn.FixedHSM(ival, inSeq, l.Block)
+				return lazyrnn.Unlazify(out)
+			} else {
+				return anyrnn.Map(s, l.Block)
+			}
 		},
 		Cost:    anynet.DotCost{},
 		Params:  l.Block.(anynet.Parameterizer).Parameters(),
@@ -172,6 +182,7 @@ type lstmTrainingFlags struct {
 	Layers     int
 	BatchSize  int
 	SortBatch  int
+	LowMem     bool
 }
 
 func (l *lstmTrainingFlags) TrainingFlags() *flag.FlagSet {
@@ -183,6 +194,7 @@ func (l *lstmTrainingFlags) TrainingFlags() *flag.FlagSet {
 	res.Float64Var(&l.Dropout, "dropout", 0.6, "dropout remain probability")
 	res.IntVar(&l.BatchSize, "batch", 32, "SGD batch size")
 	res.IntVar(&l.SortBatch, "sortbatch", 128, "sample sort batch size")
+	res.BoolVar(&l.LowMem, "lowmem", false, "use asymptotic memory saving algorithms")
 	return res
 }
 
