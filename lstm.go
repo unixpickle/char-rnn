@@ -54,7 +54,7 @@ func (l *LSTM) Train(samples SampleList) {
 				inSeq := lazyrnn.Lazify(s)
 				ival := int(math.Sqrt(float64(len(s.Output()))))
 				ival = essentials.MaxInt(ival, 1)
-				out := lazyrnn.FixedHSM(ival, inSeq, l.Block)
+				out := lazyrnn.FixedHSM(ival, true, inSeq, l.Block)
 				return lazyrnn.Unlazify(out)
 			} else {
 				return anyrnn.Map(s, l.Block)
