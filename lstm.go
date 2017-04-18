@@ -15,7 +15,8 @@ import (
 	"github.com/unixpickle/anyvec"
 	"github.com/unixpickle/anyvec/anyvec32"
 	"github.com/unixpickle/essentials"
-	"github.com/unixpickle/lazyrnn"
+	"github.com/unixpickle/lazyseq"
+	"github.com/unixpickle/lazyseq/lazyrnn"
 	"github.com/unixpickle/rip"
 	"github.com/unixpickle/serializer"
 )
@@ -51,11 +52,11 @@ func (l *LSTM) Train(samples SampleList) {
 	t := &anys2s.Trainer{
 		Func: func(s anyseq.Seq) anyseq.Seq {
 			if l.LowMem {
-				inSeq := lazyrnn.Lazify(s)
+				inSeq := lazyseq.Lazify(s)
 				ival := int(math.Sqrt(float64(len(s.Output()))))
 				ival = essentials.MaxInt(ival, 1)
 				out := lazyrnn.FixedHSM(ival, true, inSeq, l.Block)
-				return lazyrnn.Unlazify(out)
+				return lazyseq.Unlazify(out)
 			} else {
 				return anyrnn.Map(s, l.Block)
 			}
