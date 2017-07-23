@@ -127,7 +127,7 @@ func (h *HMM) meanLoss(samples anysgd.SampleList) float64 {
 		wg.Add(1)
 		go func() {
 			for sample := range ch {
-				loss := hmm.NewForwardBackward(h.HMM, sample).LogLikelihood()
+				loss := hmm.LogLikelihood(h.HMM, sample)
 
 				lock.Lock()
 				// Add 1 for the terminal symbol.
