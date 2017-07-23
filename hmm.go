@@ -112,7 +112,7 @@ func (h *HMM) initModel() {
 	for i := 0; i < 0x100; i++ {
 		obses = append(obses, byte(i))
 	}
-	h.HMM = hmm.RandomHMM(states, 0, obses)
+	h.HMM = hmm.RandomHMM(nil, states, 0, obses)
 }
 
 func (h *HMM) meanLoss(samples anysgd.SampleList) float64 {
