@@ -9,12 +9,22 @@ First, gather a folder with a bunch of text files in it (or with one big text fi
 Now, install [Go](https://golang.org/doc/install) and setup a GOPATH. Once this is done, you are ready to install char-rnn itself:
 
 ```
-$ go get -u -d -tags cuda github.com/unixpickle/char-rnn
+$ go get -u github.com/unixpickle/char-rnn
 $ cd $GOPATH/src/github.com/unixpickle/char-rnn/char-rnn
 $ go build
 ```
 
-This will generate an executable called `char-rnn` in your current directory. If you have CUDA bindings setup (instructions [here](https://godoc.org/github.com/unixpickle/cuda#hdr-Building)), you can build with `-tags cuda` to include CUDA.
+This will generate an executable called `char-rnn` in your current directory.
+
+## Installing with CUDA
+
+If you have CUDA bindings setup (instructions [here](https://godoc.org/github.com/unixpickle/cuda#hdr-Building)), you can use CUDA like so:
+
+```
+$ go get -u -tags cuda github.com/unixpickle/char-rnn/...
+$ cd $GOPATH/src/github.com/unixpickle/char-rnn/char-rnn
+$ go build -tags cuda
+```
 
 ## Training
 

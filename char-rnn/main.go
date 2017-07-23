@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	_ "github.com/unixpickle/anyplugin"
 	charrnn "github.com/unixpickle/char-rnn"
 	"github.com/unixpickle/serializer"
 )
